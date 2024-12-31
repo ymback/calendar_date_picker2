@@ -31,6 +31,9 @@ enum CalendarDatePicker2Mode {
   scroll,
 }
 
+/// Custom enum for a date picker mode including day, month, and year.
+typedef OnScrollToCurrent = void Function();
+
 /// Custom builder for the weekday label widget
 typedef CalendarWeekdayLabelBuilder = Widget? Function({
   required int weekday,
@@ -587,6 +590,7 @@ class CalendarDatePicker2WithActionButtonsConfig extends CalendarDatePicker2Conf
     this.cancelButtonTextStyle,
     this.dayRangeTextStyle,
     this.cancelButton,
+    this.todayButtonTextStyle,
     this.okButtonTextStyle,
     this.okButton,
     this.openedFromDialog,
@@ -673,6 +677,9 @@ class CalendarDatePicker2WithActionButtonsConfig extends CalendarDatePicker2Conf
   /// Custom cancel button
   final Widget? cancelButton;
 
+  /// Text style for today button
+  final TextStyle? todayButtonTextStyle;
+
   /// Text style for ok button
   final TextStyle? okButtonTextStyle;
 
@@ -742,6 +749,7 @@ class CalendarDatePicker2WithActionButtonsConfig extends CalendarDatePicker2Conf
     TextStyle? cancelButtonTextStyle,
     TextStyle? dayRangeTextStyle,
     Widget? cancelButton,
+    TextStyle? todayButtonTextStyle,
     TextStyle? okButtonTextStyle,
     Widget? okButton,
     bool? openedFromDialog,
@@ -820,6 +828,7 @@ class CalendarDatePicker2WithActionButtonsConfig extends CalendarDatePicker2Conf
       cancelButtonTextStyle: cancelButtonTextStyle ?? this.cancelButtonTextStyle,
       dayRangeTextStyle: dayRangeTextStyle ?? this.dayRangeTextStyle,
       cancelButton: cancelButton ?? this.cancelButton,
+      todayButtonTextStyle: todayButtonTextStyle ?? this.todayButtonTextStyle,
       okButtonTextStyle: okButtonTextStyle ?? this.okButtonTextStyle,
       okButton: okButton ?? this.okButton,
       openedFromDialog: openedFromDialog ?? this.openedFromDialog,

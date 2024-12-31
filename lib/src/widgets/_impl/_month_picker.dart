@@ -17,6 +17,7 @@ class _MonthPicker extends StatefulWidget {
     required this.selectedDates,
     required this.onChanged,
     required this.initialMonth,
+    required this.onScrollToCurrentMonth,
     Key? key,
   }) : super(key: key);
 
@@ -34,6 +35,9 @@ class _MonthPicker extends StatefulWidget {
   /// The initial month to display.
   final DateTime initialMonth;
 
+  /// Scroll to current month
+  final ValueChanged<OnScrollToCurrent> onScrollToCurrentMonth;
+
   @override
   State<_MonthPicker> createState() => _MonthPickerState();
 }
@@ -45,22 +49,25 @@ class _MonthPickerState extends State<_MonthPicker> {
   @override
   void initState() {
     super.initState();
-    final scrollOffset =
-        widget.selectedDates.isNotEmpty && widget.selectedDates[0] != null
-            ? _scrollOffsetForMonth(widget.selectedDates[0]!)
-            : _scrollOffsetForMonth(DateUtils.dateOnly(DateTime.now()));
-    _scrollController = widget.config.monthViewController ??
-        ScrollController(initialScrollOffset: scrollOffset);
+    final scrollOffset = widget.selectedDates.isNotEmpty && widget.selectedDates[0] != null
+        ? _scrollOffsetForMonth(widget.selectedDates[0]!)
+        : _scrollOffsetForMonth(DateUtils.dateOnly(DateTime.now()));
+    _scrollController = widget.config.monthViewController ?? ScrollController(initialScrollOffset: scrollOffset);
+    widget.onScrollToCurrentMonth(scrollToCurrent);
+  }
+
+  scrollToCurrent() {
+    final scrollOffset = _scrollOffsetForMonth(DateUtils.dateOnly(DateTime.now()));
+    _scrollController.jumpTo(scrollOffset);
   }
 
   @override
   void didUpdateWidget(_MonthPicker oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedDates != oldWidget.selectedDates) {
-      final scrollOffset =
-          widget.selectedDates.isNotEmpty && widget.selectedDates[0] != null
-              ? _scrollOffsetForMonth(widget.selectedDates[0]!)
-              : _scrollOffsetForMonth(DateUtils.dateOnly(DateTime.now()));
+      final scrollOffset = widget.selectedDates.isNotEmpty && widget.selectedDates[0] != null
+          ? _scrollOffsetForMonth(widget.selectedDates[0]!)
+          : _scrollOffsetForMonth(DateUtils.dateOnly(DateTime.now()));
       _scrollController.jumpTo(scrollOffset);
     }
   }
@@ -84,19 +91,15 @@ class _MonthPickerState extends State<_MonthPicker> {
     final TextTheme textTheme = Theme.of(context).textTheme;
     final int month = 1 + index;
     final bool isCurrentMonth =
-        widget.initialMonth.year == widget.config.currentDate.year &&
-            widget.config.currentDate.month == month;
+        widget.initialMonth.year == widget.config.currentDate.year && widget.config.currentDate.month == month;
     const double decorationHeight = 36.0;
     const double decorationWidth = 72.0;
 
     final bool isSelected = widget.selectedDates.isNotEmpty &&
-        widget.selectedDates.any((date) =>
-            date != null &&
-            widget.initialMonth.year == date.year &&
-            date.month == month);
-    var isMonthSelectable =
-        widget.initialMonth.year >= widget.config.firstDate.year &&
-            widget.initialMonth.year <= widget.config.lastDate.year;
+        widget.selectedDates
+            .any((date) => date != null && widget.initialMonth.year == date.year && date.month == month);
+    var isMonthSelectable = widget.initialMonth.year >= widget.config.firstDate.year &&
+        widget.initialMonth.year <= widget.config.lastDate.year;
     if (isMonthSelectable) {
       if (widget.initialMonth.year == widget.config.firstDate.year) {
         isMonthSelectable = month >= widget.config.firstDate.month;
@@ -106,9 +109,8 @@ class _MonthPickerState extends State<_MonthPicker> {
         isMonthSelectable = month <= widget.config.lastDate.month;
       }
     }
-    final monthSelectableFromPredicate = widget.config.selectableMonthPredicate
-            ?.call(widget.initialMonth.year, month) ??
-        true;
+    final monthSelectableFromPredicate =
+        widget.config.selectableMonthPredicate?.call(widget.initialMonth.year, month) ?? true;
     isMonthSelectable = isMonthSelectable && monthSelectableFromPredicate;
 
     final Color textColor;
@@ -117,14 +119,12 @@ class _MonthPickerState extends State<_MonthPicker> {
     } else if (!isMonthSelectable) {
       textColor = colorScheme.onSurface.withOpacity(0.38);
     } else if (isCurrentMonth) {
-      textColor =
-          widget.config.selectedDayHighlightColor ?? colorScheme.primary;
+      textColor = widget.config.selectedDayHighlightColor ?? colorScheme.primary;
     } else {
       textColor = colorScheme.onSurface.withOpacity(0.87);
     }
 
-    TextStyle? itemStyle = widget.config.monthTextStyle ??
-        textTheme.bodyLarge?.apply(color: textColor);
+    TextStyle? itemStyle = widget.config.monthTextStyle ?? textTheme.bodyLarge?.apply(color: textColor);
     if (isSelected) {
       itemStyle = widget.config.selectedMonthTextStyle ?? itemStyle;
     }
@@ -133,16 +133,14 @@ class _MonthPickerState extends State<_MonthPicker> {
     if (isSelected) {
       decoration = BoxDecoration(
         color: widget.config.selectedDayHighlightColor ?? colorScheme.primary,
-        borderRadius: widget.config.monthBorderRadius ??
-            BorderRadius.circular(decorationHeight / 2),
+        borderRadius: widget.config.monthBorderRadius ?? BorderRadius.circular(decorationHeight / 2),
       );
     } else if (isCurrentMonth && isMonthSelectable) {
       decoration = BoxDecoration(
         border: Border.all(
           color: widget.config.selectedDayHighlightColor ?? colorScheme.primary,
         ),
-        borderRadius: widget.config.monthBorderRadius ??
-            BorderRadius.circular(decorationHeight / 2),
+        borderRadius: widget.config.monthBorderRadius ?? BorderRadius.circular(decorationHeight / 2),
       );
     }
 
@@ -164,8 +162,7 @@ class _MonthPickerState extends State<_MonthPicker> {
                 selected: isSelected,
                 button: true,
                 child: Text(
-                  getLocaleShortMonthFormat(_locale)
-                      .format(DateTime(widget.initialMonth.year, month)),
+                  getLocaleShortMonthFormat(_locale).format(DateTime(widget.initialMonth.year, month)),
                   style: itemStyle,
                 ),
               ),
@@ -200,9 +197,7 @@ class _MonthPickerState extends State<_MonthPicker> {
     return Column(
       children: <Widget>[
         Divider(
-          color: widget.config.hideMonthPickerDividers == true
-              ? Colors.transparent
-              : null,
+          color: widget.config.hideMonthPickerDividers == true ? Colors.transparent : null,
         ),
         Expanded(
           child: GridView.builder(
@@ -210,14 +205,11 @@ class _MonthPickerState extends State<_MonthPicker> {
             gridDelegate: _monthPickerGridDelegate,
             itemBuilder: _buildMonthItem,
             itemCount: 12,
-            padding:
-                const EdgeInsets.symmetric(horizontal: _monthPickerPadding),
+            padding: const EdgeInsets.symmetric(horizontal: _monthPickerPadding),
           ),
         ),
         Divider(
-          color: widget.config.hideMonthPickerDividers == true
-              ? Colors.transparent
-              : null,
+          color: widget.config.hideMonthPickerDividers == true ? Colors.transparent : null,
         ),
       ],
     );
@@ -229,8 +221,7 @@ class _MonthPickerGridDelegate extends SliverGridDelegate {
 
   @override
   SliverGridLayout getLayout(SliverConstraints constraints) {
-    final double tileWidth = (constraints.crossAxisExtent -
-            (_monthPickerColumnCount - 1) * _monthPickerRowSpacing) /
+    final double tileWidth = (constraints.crossAxisExtent - (_monthPickerColumnCount - 1) * _monthPickerRowSpacing) /
         _monthPickerColumnCount;
     return SliverGridRegularTileLayout(
       childCrossAxisExtent: tileWidth,
@@ -246,5 +237,4 @@ class _MonthPickerGridDelegate extends SliverGridDelegate {
   bool shouldRelayout(_MonthPickerGridDelegate oldDelegate) => false;
 }
 
-const _MonthPickerGridDelegate _monthPickerGridDelegate =
-    _MonthPickerGridDelegate();
+const _MonthPickerGridDelegate _monthPickerGridDelegate = _MonthPickerGridDelegate();

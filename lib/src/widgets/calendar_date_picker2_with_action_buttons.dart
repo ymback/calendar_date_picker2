@@ -48,6 +48,9 @@ class _CalendarDatePicker2WithActionButtonsState extends State<CalendarDatePicke
   List<DateTime?> _values = [];
   List<DateTime?> _editCache = [];
 
+  OnScrollToCurrent? onScrollToCurrentOfMonth;
+  OnScrollToCurrent? onScrollToCurrentOfDay;
+
   @override
   void initState() {
     _values = widget.value;
@@ -95,6 +98,12 @@ class _CalendarDatePicker2WithActionButtonsState extends State<CalendarDatePicke
               });
             },
             onDisplayedMonthChanged: widget.onDisplayedMonthChanged,
+            onScrollToCurrentOfDay: (callback) {
+              onScrollToCurrentOfDay = callback;
+            },
+            onScrollToCurrentOfMonth: (callback) {
+              onScrollToCurrentOfMonth = callback;
+            },
           ),
         ),
         SizedBox(height: widget.config.gapBetweenCalendarAndButtons ?? 10),
@@ -102,6 +111,8 @@ class _CalendarDatePicker2WithActionButtonsState extends State<CalendarDatePicke
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             getText(),
+            Expanded(child: Container()),
+            getTodayButton(),
             Expanded(child: Container()),
             _buildCancelButton(Theme.of(context).colorScheme, localizations),
             if ((widget.config.gapBetweenCalendarAndButtons ?? 0) > 0)
@@ -142,6 +153,47 @@ class _CalendarDatePicker2WithActionButtonsState extends State<CalendarDatePicke
     return Container(
       padding: widget.config.buttonPadding ?? const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       child: Text(hint, style: widget.config.dayRangeTextStyle),
+    );
+  }
+
+  Widget getTodayButton() {
+    if (_editCache.isEmpty || widget.config.calendarType != CalendarDatePicker2Type.range) {
+      return Container();
+    }
+    DateTime? start = _editCache[0];
+    DateTime? end;
+    if (_editCache.length > 1) {
+      end = _editCache[1];
+    }
+    if (start == null || end != null) {
+      return Container();
+    }
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _editCache.add(DateTime.now());
+        });
+        if (onScrollToCurrentOfMonth != null) {
+          onScrollToCurrentOfMonth!();
+        }
+        if (onScrollToCurrentOfDay != null) {
+          onScrollToCurrentOfDay!();
+        }
+      },
+      behavior: HitTestBehavior.translucent,
+      child: Container(
+        padding: widget.config.buttonPadding ?? const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+        child: Text(
+          //widget.config.isOnlyMonthRange ? "当月" : "今日",
+          widget.config.isOnlyMonthRange ? "今日" : "今日",
+          style: widget.config.todayButtonTextStyle ??
+              TextStyle(
+                color: widget.config.selectedDayHighlightColor ?? Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+              ),
+        ),
+      ),
     );
   }
 

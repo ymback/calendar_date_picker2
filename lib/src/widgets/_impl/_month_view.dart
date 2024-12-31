@@ -8,6 +8,7 @@ class _MonthView extends StatefulWidget {
     required this.selectedDates,
     required this.onChanged,
     required this.onDisplayedYearChanged,
+    required this.onScrollToCurrentMonth,
     Key? key,
   }) : super(key: key);
 
@@ -27,6 +28,9 @@ class _MonthView extends StatefulWidget {
 
   /// Called when the user navigates to a new month.
   final ValueChanged<DateTime> onDisplayedYearChanged;
+
+  /// Scroll to current month
+  final ValueChanged<OnScrollToCurrent> onScrollToCurrentMonth;
 
   @override
   _MonthViewState createState() => _MonthViewState();
@@ -63,6 +67,11 @@ class _MonthViewState extends State<_MonthView> {
       DirectionalFocusIntent: CallbackAction<DirectionalFocusIntent>(onInvoke: _handleDirectionFocus),
     };
     _monthGridFocus = FocusNode(debugLabel: 'Day Grid');
+    widget.onScrollToCurrentMonth(scrollToCurrent);
+  }
+
+  scrollToCurrent() {
+    _showYear(DateTime.now(),jump: true);
   }
 
   @override

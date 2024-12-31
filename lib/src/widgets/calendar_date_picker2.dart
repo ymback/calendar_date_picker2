@@ -53,6 +53,8 @@ class CalendarDatePicker2 extends StatefulWidget {
   CalendarDatePicker2({
     required this.config,
     required this.value,
+    required this.onScrollToCurrentOfDay,
+    required this.onScrollToCurrentOfMonth,
     this.onValueChanged,
     this.displayedMonthDate,
     this.onDisplayedMonthChanged,
@@ -75,6 +77,12 @@ class CalendarDatePicker2 extends StatefulWidget {
       );
     }
   }
+
+  // The callback to scroll to current day
+  final ValueChanged<OnScrollToCurrent> onScrollToCurrentOfDay;
+
+  // The callback to scroll to current month
+  final ValueChanged<OnScrollToCurrent> onScrollToCurrentOfMonth;
 
   /// The calendar UI related configurations
   final CalendarDatePicker2Config config;
@@ -423,6 +431,9 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
                   selectedDates: _selectedDates,
                   onChanged: _handleMonthChanged,
                   onDisplayedYearChanged: _handleDisplayedMonthChanged,
+                  onScrollToCurrentMonth: (callback) {
+                    widget.onScrollToCurrentOfMonth(callback);
+                  },
                 )
               : _MonthPicker(
                   config: widget.config,
@@ -430,6 +441,9 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
                   initialMonth: _currentDisplayedMonthDate,
                   selectedDates: _selectedDates,
                   onChanged: _handleMonthChanged,
+                  onScrollToCurrentMonth: (callback) {
+                    widget.onScrollToCurrentOfMonth(callback);
+                  },
                 ),
         );
       case CalendarDatePicker2Mode.year:
@@ -453,6 +467,9 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
             selectedDates: _selectedDates,
             onChanged: _handleDayChanged,
             onDisplayedMonthChanged: _handleDisplayedMonthDateChanged,
+            onScrollToCurrentDay: (callback) {
+              widget.onScrollToCurrentOfDay(callback);
+            },
           ),
         );
     }
