@@ -84,6 +84,31 @@ class _CalendarDatePicker2WithActionButtonsState extends State<CalendarDatePicke
   @override
   Widget build(BuildContext context) {
     final MaterialLocalizations localizations = MaterialLocalizations.of(context);
+    Widget? todayButton = getTodayButton();
+    List<Widget> children = [];
+    if (todayButton == null) {
+      children = [
+        Expanded(
+          child: getText(),
+        ),
+        _buildCancelButton(Theme.of(context).colorScheme, localizations),
+        if ((widget.config.gapBetweenCalendarAndButtons ?? 0) > 0)
+          SizedBox(width: widget.config.gapBetweenCalendarAndButtons),
+        _buildOkButton(Theme.of(context).colorScheme, localizations),
+      ];
+    } else {
+      children = [
+        Expanded(
+          child: getText(),
+        ),
+        todayButton,
+        SizedBox(width: widget.config.gapBetweenCalendarAndButtons),
+        _buildCancelButton(Theme.of(context).colorScheme, localizations),
+        if ((widget.config.gapBetweenCalendarAndButtons ?? 0) > 0)
+          SizedBox(width: widget.config.gapBetweenCalendarAndButtons),
+        _buildOkButton(Theme.of(context).colorScheme, localizations),
+      ];
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -109,16 +134,7 @@ class _CalendarDatePicker2WithActionButtonsState extends State<CalendarDatePicke
         SizedBox(height: widget.config.gapBetweenCalendarAndButtons ?? 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            getText(),
-            Expanded(child: Container()),
-            getTodayButton(),
-            Expanded(child: Container()),
-            _buildCancelButton(Theme.of(context).colorScheme, localizations),
-            if ((widget.config.gapBetweenCalendarAndButtons ?? 0) > 0)
-              SizedBox(width: widget.config.gapBetweenCalendarAndButtons),
-            _buildOkButton(Theme.of(context).colorScheme, localizations),
-          ],
+          children: children,
         ),
       ],
     );
@@ -152,13 +168,17 @@ class _CalendarDatePicker2WithActionButtonsState extends State<CalendarDatePicke
     }
     return Container(
       padding: widget.config.buttonPadding ?? const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      child: Text(hint, style: widget.config.dayRangeTextStyle),
+      child: Text(
+        hint,
+        style: widget.config.dayRangeTextStyle,
+        maxLines: 2,
+      ),
     );
   }
 
-  Widget getTodayButton() {
+  Widget? getTodayButton() {
     if (_editCache.isEmpty || widget.config.calendarType != CalendarDatePicker2Type.range) {
-      return Container();
+      return null;
     }
     DateTime? start = _editCache[0];
     DateTime? end;
@@ -166,7 +186,7 @@ class _CalendarDatePicker2WithActionButtonsState extends State<CalendarDatePicke
       end = _editCache[1];
     }
     if (start == null || end != null) {
-      return Container();
+      return null;
     }
     return GestureDetector(
       onTap: () {
@@ -182,7 +202,7 @@ class _CalendarDatePicker2WithActionButtonsState extends State<CalendarDatePicke
       },
       behavior: HitTestBehavior.translucent,
       child: Container(
-        padding: widget.config.buttonPadding ?? const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+        padding: widget.config.buttonPadding ?? const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
         child: Text(
           //widget.config.isOnlyMonthRange ? "当月" : "今日",
           widget.config.isOnlyMonthRange ? "今日" : "今日",
