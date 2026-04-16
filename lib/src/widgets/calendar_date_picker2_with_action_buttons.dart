@@ -101,8 +101,12 @@ class _CalendarDatePicker2WithActionButtonsState extends State<CalendarDatePicke
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            getText(),
-            Expanded(child: Container()),
+            Expanded(
+              child: Container(
+                alignment: Alignment.centerLeft,
+                child: getText(),
+              ),
+            ),
             _buildCancelButton(Theme.of(context).colorScheme, localizations),
             if ((widget.config.gapBetweenCalendarAndButtons ?? 0) > 0)
               SizedBox(width: widget.config.gapBetweenCalendarAndButtons),
@@ -141,7 +145,11 @@ class _CalendarDatePicker2WithActionButtonsState extends State<CalendarDatePicke
     }
     return Container(
       padding: widget.config.buttonPadding ?? const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      child: Text(hint, style: widget.config.dayRangeTextStyle),
+      child: Text(
+        hint,
+        style: widget.config.dayRangeTextStyle,
+        maxLines: 2,
+      ),
     );
   }
 
